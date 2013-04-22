@@ -1,13 +1,13 @@
-gpkg-vector
+gpkg-simplefeatures
 ===========
 
-GeoPackage Vector extension
+GeoPackage Extension for Simple Features Geodata
 
-An experimental GeoPackage specification for vector geodata derived from the geopackage candidate standard. 
+An experimental GeoPackage specification for simple features (vector) geodata derived from the geopackage candidate standard. 
 
-To contribute find an issue in the [tracker] (http://github.com/rajrsingh/gpkg-vector/issues) and make a pull request. 
+To contribute find an issue in the [tracker] (http://github.com/rajrsingh/gpkg-simplefeatures/issues) and make a pull request. 
 
-If you are a github newbie then just hit 'edit' on the [spec.md page] (https://github.com/rajrsingh/gpkg-vector/blob/master/spec.md). Then create a 'pull request' from your fork to submit the work for review and merging.
+If you are a github newbie then just hit 'edit' on the [spec.md page] (https://github.com/rajrsingh/gpkg-simplefeatures/blob/master/spec.md). Then create a 'pull request' from your fork to submit the work for review and merging.
 
 If you are comfortable with git then please fork the project and do individual tickets in their own branches.
 
