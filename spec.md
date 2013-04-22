@@ -27,7 +27,7 @@ Simple features geodata is stored in a file format as specified in [GeoPackage C
 
 A component of the standard SQL schema is a table or updateable view specified in OGC 06-104r4 [14] section 7.1.3.1 that identifies the geometry columns in tables that contain data representing simple features.  This table or updateable view SHALL contain one record for each geometry column in each vector feature data table (clause 6.3.6.1) in a GeoPackage.
 
-**Table 7-1** - `geometry_columns` Table or View Definition
+**Table 7-1:** `geometry_columns` Table or View Definition
 
 |Column Name       |Column Type|Column Description|Key|
 |------------------|-----------|------------------|---|
@@ -59,29 +59,86 @@ OptimizedGeoPackageBinary {
   double[] envelope;          // see flags envelope contents indicator code below
   WKBGeometry geometry;       // per OGC 06-103r4 clause 8
 }
-
 ```
 
-**TABLE 7-2** - Geometry Binary Format flags layout
+**TABLE 7-2:** Geometry Binary Format flags layout
 
-|bit|7|6|5|4|3|2|1|0|
-|---|-|-|-|-|-|-|-|-|
-|**use**|V|V|V|V|E|E|E|B|
-|use: v=version number (4-bit unsigned integer) 0 = version 1|||||||||
+<table>
+	<tr>
+		<td><b>bit</b></td>
+		<td>7</td>
+		<td>6</td>
+		<td>5</td>
+		<td>4</td>
+		<td>3</td>
+		<td>2</td>
+		<td>1</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td><b>use:</b></td>
+		<td>V</td>
+		<td>V</td>
+		<td>V</td>
+		<td>V</td>
+		<td>E</td>
+		<td>E</td>
+		<td>E</td>
+		<td>B</td>
+	</tr>
+	<tr>
+		<td colspan="9"><b>use: <br>
+		V: version number</b> (4-bit unsigned integer)<br>
+		&nbsp;&nbsp;0 = version 1
+		</td>
+	</tr>
+</table>
 
+**Table 7-3:** Envelope contents indicator code (3-bit unsigned integer)
 
-**Table 7-3** - Envelope contents indicator code (3-bit unsigned integer)
+<table>
+	<tr>
+		<td>code value</td>
+		<td>description</td>
+		<td>envelope length (bytes)</td>
+	</tr>
+	<tr>
+		<td>0</td>
+		<td>no envelope (space saving slower indexing option)</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>envelope is [minx, maxx, miny, maxy]</td>
+		<td>32</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>envelope is [minx, maxx, miny, maxy, minz, maxz]</td>
+		<td>48</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>envelope is [minx, maxx, miny, maxy, minm, maxm]</td>
+		<td>48</td>
+	</tr>
+	<tr>
+		<td>4</td>
+		<td>envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm]</td>
+		<td>64</td>
+	</tr>
+	<tr>
+		<td colspan="3">B: byte order for header values (1-bit Boolean)<br>
+		&nbsp;&nbsp;0 = Big Endian (most significant bit first)<br>
+		&nbsp;&nbsp;1 = Little Endian (least significant bit first)
+		</td>
+	</tr>
+</table>
 
-|code value|description                             |envelope length (bytes)|
-|----------|----------------------------------------|-----------------------|
-|0         |no envelope (space saving slower indexing option)|0|
-|1         |envelope is [minx, maxx, miny, maxy]|32|
-|2         |envelope is [minx, maxx, miny, maxy, minz, maxz]|48|
-|3         |envelope is [minx, maxx, miny, maxy, minm, maxm]|48|
-|4         |envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm]|64|
-|B: byte order for header values (1-bit Boolean) |||
-|	0 = Big Endian (most significant bit first) |||
-|	1 = Little Endian (least significant bit first) |||
+|Requirement|Core|
+|-----------|----|
+|URI        |http://www.opengis.net/spec/GPKG/1.0/req/ext/simplefeatures/geometry_blob|
+|REQ 2      |A GeoPackage SHALL store all geometry SQL BLOBs using the binary structure specified in tables 7-2 and 7-3|
 
 
 ## 8 Global Tables
@@ -101,16 +158,35 @@ All geometry types and relational operators implemented by a GeoPackage SHALL co
 |Requirement|Core|
 |-----------|----|
 |URI        |http://www.opengis.net/spec/GPKG/1.0/req/ext/simplefeatures/geometry_types|
-|REQ 2      |A GeoPackage SHALL encode GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, MULTIPOINT, MULTILINESTRING and MULTIPOLYGON geometry types in feature tables as specified in OGC 06-104r4|
+|REQ 3      |A GeoPackage SHALL encode GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, MULTIPOINT, MULTILINESTRING and MULTIPOLYGON geometry types in feature tables as specified in OGC 06-104r4 and clauses 7.2 and 9.1 of this standard|
 
 > NOTE: SQLite does not support user-defined types, but does allow arbitrary type names to be used when declaring columns in a table. The declared type of a geometry column shall match one of the geometry type names specified above. The internal data type shall be a BLOB. The binary encoding of geometries is specified in clause 6.2.1 above.
 
 GeoPackage implementations SHALL assure that the geometry values stored in a geometry column of a feature table are of a geometry type that is compatible with (the same as or a subclass of) the geometry type specified for the column in the geometry_columns.geometry_type value for the geometry column, and are of the SRID specified for the geometry column in the geometry_columns.srid for the column by implementation of the feature geometry validation triggers specified in clause 7.3.5." NOTE2:  A feature type may be defined to have 0..n geometry attributes, so the corresponding feature table may contain from 0..n geometry columns.
 
-> NOTE:  A feature type may be defined to have 0..n raster attributes, so the corresponding feature table may also be a raster table that contains from 0..n raster columns.  See clause 6.3.4.2 below.
-
-Every feature table in a GeoPackage SHALL have aprimary key defined on one integer column so that row level metadata records may be linked to the feature records in it by rowid as described in clause 6.3.2.4.3 above.  
+Every feature table in a GeoPackage SHALL have a primary key defined on one integer column so that row level metadata records may be linked to the feature records in it by rowid as described in clause 6.3.2.4.3 above.  
 
 > NOTE:  A GeoPackage is not required to contain any feature data tables.
 
 > NOTE:  Feature data tables in a GeoPackage may be empty. 
+
+|Requirement|Core|
+|-----------|----|
+|URI        |http://www.opengis.net/spec/GPKG/1.0/req/ext/simplefeatures/integer_primary_key|
+|REQ 4      |Every feature table in a GeoPackage SHALL have a primary key defined on one or more columns as specified in clause 7.1|
+
+**Table 9-1: Sample Feature Table or View Definition**
+
+Sample table or view name: `sample_feature_table`
+
+|Column Name|Column Type|Column Description|Null|Default|Key|
+|-----------|-----------|------------------|----|-------|---|
+|`id`       |integer    |Autoincrement primary key|no|  |PK |
+|`geometry_one`|BLOB    |GeoPackage Geometry|no|     |      |
+|`text_attribute`|text  |Text attribute of feature|no|  |   |
+|`real_attribute`|real  |Real attribute of feature|no|  |   |
+|`numeric_attribute`|numeric|Numeric attribute of feature|no|||
+|`raster_or_ photo`|BLOB|Photograph of the area   |no|  |   |
+
+See Annex B: Table Definition SQL clause B.11 sample_feature_table 
+
